@@ -11,8 +11,13 @@ public record UserResponse(UUID id, String username, String name, String surname
 
     public static UserResponse from(User user) {
         return new UserResponse(
-            user.getId(), user.getUsername(), user.getName(), user.getSurname(),
-            user.getDateOfBirth(), user.getRole(), user.getEmail()
+                user.getId(),
+                user.getUsername(),
+                user.getName(),
+                user.getSurname(),
+                user.getDateOfBirth(),
+                user.getRole(),
+                user.getEmail()
         );
     }
 }
