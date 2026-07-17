@@ -21,9 +21,9 @@ public class EventoService {
     private final EventoRepository eventoRepository;
 
     public EventoResponse create(EventoRequest request, User currentUser) {
-        if (currentUser.getRole() != RoleUser.EVENT_CREATOR) {
-            throw new NonAutorizzatoException("Solo gli organizzatori possono creare eventi");
-        }
+//        if (currentUser.getRole() != RoleUser.EVENT_CREATOR) {
+//            throw new NonAutorizzatoException("Solo gli organizzatori possono creare eventi");
+//        }
         Evento evento = new Evento();
         evento.setTitle(request.getTitle());
         evento.setDescription(request.getDescription());
@@ -40,6 +40,15 @@ public class EventoService {
         );
     }
 
+    private void verifiryCreator(Evento evento, User currentUser) {
+        if (currentUser.getRole() != RoleUser.EVENT_CREATOR) {
+            throw new NonAutorizzatoException("Solo gli organizzatori possono modificare o eliminare eventi");
+        }
+        if (!evento.getEventCreator().getId().equals(currentUser.getId())) {
+            throw new NonAutorizzatoException("Non sei il creatore di questo evento");
+        }
+    }
+
 
     public List<EventoResponse> getAll() {
         return eventoRepository.findAll().stream()
@@ -51,7 +60,7 @@ public class EventoService {
     public EventoResponse update(UUID id, EventoRequest request, User currentUser) {
         Evento evento = eventoRepository.findById(id)
                 .orElseThrow(() -> new EventoNotFoundException(id));
-        checkOwnership(evento, currentUser);
+        verifiryCreator(evento, currentUser);
         evento.setTitle(request.getTitle());
         evento.setDescription(request.getDescription());
         evento.setDate(request.getDate());
@@ -64,16 +73,8 @@ public class EventoService {
     public void delete(UUID id, User currentUser) {
         Evento evento = eventoRepository.findById(id)
                 .orElseThrow(() -> new EventoNotFoundException(id));
-        checkOwnership(evento, currentUser);
+        verifiryCreator(evento, currentUser);
         eventoRepository.delete(evento);
     }
 
-    private void checkOwnership(Evento evento, User currentUser) {
-        if (currentUser.getRole() != RoleUser.EVENT_CREATOR) {
-            throw new NonAutorizzatoException("Solo gli organizzatori possono modificare o eliminare eventi");
-        }
-        if (!evento.getEventCreator().getId().equals(currentUser.getId())) {
-            throw new NonAutorizzatoException("Non sei il creatore di questo evento");
-        }
-    }
 }

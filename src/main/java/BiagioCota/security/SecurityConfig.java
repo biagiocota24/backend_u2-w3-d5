@@ -1,8 +1,10 @@
 package BiagioCota.security;
 
+import BiagioCota.errorHandler.AccessoNegatoHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -21,6 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final AccessoNegatoHandler accessoNegatoHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -28,10 +31,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/users/**").permitAll()
-                        .anyRequest().authenticated()
+                                .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/users/**").permitAll() // permitAll solo per avere la lista degli user con cui testare
+                                .requestMatchers(HttpMethod.POST, "/eventi").hasRole("EVENT_CREATOR")
+//                        .requestMatchers(HttpMethod.DELETE, "/eventi/**").hasRole("EVENT_CREATOR")
+//                        .requestMatchers(HttpMethod.PUT, "/eventi/**").hasRole("EVENT_CREATOR")
+                                .anyRequest().authenticated()
                 )
+                .exceptionHandling(ex -> ex.accessDeniedHandler(accessoNegatoHandler))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
