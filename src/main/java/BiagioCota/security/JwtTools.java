@@ -1,5 +1,7 @@
 package BiagioCota.security;
 
+import BiagioCota.entities.User;
+import BiagioCota.payloads.auth.LoginRequest;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -10,7 +12,7 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
-public class JwtUtil {
+public class JwtTools {
 
     @Value("${jwt.secret}")
     private String secret;
@@ -21,9 +23,9 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String username) {
+    public String generateToken(LoginRequest request) {
         return Jwts.builder()
-            .subject(username)
+            .subject(request.getUsername())
             .issuedAt(new Date())
             .expiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
             .signWith(key())

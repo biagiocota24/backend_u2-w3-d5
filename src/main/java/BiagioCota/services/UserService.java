@@ -4,7 +4,7 @@ import BiagioCota.entities.User;
 import BiagioCota.exceptions.UserEsisteGiaException;
 import BiagioCota.payloads.auth.*;
 import BiagioCota.repositories.UserRepository;
-import BiagioCota.security.JwtUtil;
+import BiagioCota.security.JwtTools;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +20,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
+    private final JwtTools jwtTools;
 
     public List<UserResponse> finAll() {
         return this.userRepository.findAll().stream().map(user -> UserResponse.from(user)).toList();
@@ -49,6 +49,6 @@ public class UserService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
-        return new LoginResponse(jwtUtil.generateToken(request.getUsername()));
+        return new LoginResponse(jwtTools.generateToken(request));
     }
 }
